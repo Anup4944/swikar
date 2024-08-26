@@ -106,3 +106,7 @@
 // const [job1] = jobs;
 
 // console.log(job1);
+
+// optional chaning => ?.,
+
+// null coalation => ??

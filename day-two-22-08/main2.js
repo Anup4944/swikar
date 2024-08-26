@@ -1,4 +1,5 @@
-// functions
+// FUNCTIONS
+
 // function getUrl(email, name) {
 //   console.log(arguments);
 // }
