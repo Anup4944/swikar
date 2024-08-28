@@ -1,0 +1,14 @@
+SERVER: computer program or device that servers another computer program and user.
+
+EXPORT
+default export:  export default App
+
+name export  :export {App}
+
+
+
+IMPORT
+
+default import:  import something from "././"
+
+name import : import {something} from "././."
