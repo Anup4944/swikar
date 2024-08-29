@@ -1,0 +1,28 @@
+.button {
+  height: 40px;
+  width: 100px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 10px 10px;
+  cursor: pointer;
+  margin: 20px;
+}
+
+.bg-primary {
+  background-color: blue;
+}
+.bg-secondary {
+  background-color: rgb(198, 68, 17);
+}
+
+.btn-sm {
+  height: 30px;
+  width: 50px;
+}
+.btn-md {
+  height: 60px;
+  width: 100px;
+}
