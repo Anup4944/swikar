@@ -42,10 +42,15 @@
 // export default App;
 
 import { useState, useEffect } from "react";
+import Form from "./components/Form";
+import Class from "./components/Class";
+import { NewForm } from "./components/NewForm";
+import Fpl from "./components/Fpl";
 function App() {
   const [count, setCount] = useState(1);
   const [toDos, setToDos] = useState([]);
   const [error, setError] = useState(" ");
+  const [number, setNumber] = useState(0);
 
   async function getData() {
     const url = "https://jsonplaceholder.typicode.com/todos";
@@ -83,12 +88,20 @@ function App() {
 
   return (
     <div>
-      <button onClick={() => setCount(count + 1)}>
+      {/* <button onClick={() => setCount(count + 1)}>
         Increment Count: {count}
       </button>
       <button onClick={handleGetTodo}>Get Todos</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {toDos.length > 0 && <p>{toDos[0].title}</p>}
+      {toDos.length > 0 && <p>{toDos[0].title}</p>} */}
+      {/* <Form /> */}
+      {/* <Class /> */}
+      {/* <p>This is parent component {number}</p>
+      Actual :{number}
+      <button onClick={() => setNumber(number + 1)}>Click me</button>
+      <NewForm number={number} setNumber={setNumber} /> */}
+
+      <Fpl />
     </div>
   );
 }
