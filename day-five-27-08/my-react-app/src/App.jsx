@@ -46,6 +46,8 @@ import Form from "./components/Form";
 import Class from "./components/Class";
 import { NewForm } from "./components/NewForm";
 import Fpl from "./components/Fpl";
+import DeviviedState from "./components/DeviviedState";
+import TypeScript from "./components/TypeScript";
 function App() {
   const [count, setCount] = useState(1);
   const [toDos, setToDos] = useState([]);
@@ -101,7 +103,9 @@ function App() {
       <button onClick={() => setNumber(number + 1)}>Click me</button>
       <NewForm number={number} setNumber={setNumber} /> */}
 
-      <Fpl />
+      {/* <Fpl /> */}
+      <DeviviedState />
+      {/* <TypeScript /> */}
     </div>
   );
 }
