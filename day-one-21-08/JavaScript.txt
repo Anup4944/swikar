@@ -4,4 +4,3 @@ JavaScript
 - has build in functions and logics
 - ECMA Script ES6, that maintains JavaScript
 - main kaam to work with UI
-- 
