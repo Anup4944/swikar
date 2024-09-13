@@ -1,15 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -19,202 +8,220 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  CopyIcon,
+  EditIcon,
+  EyeIcon,
+  TrashIcon,
+} from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import getUsers, { TUser } from "@/apiCalls/getUsers";
 
-// Mock data for 15 users
-const users = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    address: "123 Main St, City, Country",
-    phone: "+1 234 567 890",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    address: "456 Elm St, Town, Country",
-    phone: "+1 234 567 891",
-  },
-  {
-    id: 3,
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    address: "789 Oak St, Village, Country",
-    phone: "+1 234 567 892",
-  },
-  {
-    id: 4,
-    name: "Alice Brown",
-    email: "alice@example.com",
-    address: "101 Pine St, Hamlet, Country",
-    phone: "+1 234 567 893",
-  },
-  {
-    id: 5,
-    name: "Charlie Davis",
-    email: "charlie@example.com",
-    address: "202 Maple St, Borough, Country",
-    phone: "+1 234 567 894",
-  },
-  {
-    id: 6,
-    name: "Eva Wilson",
-    email: "eva@example.com",
-    address: "303 Cedar St, District, Country",
-    phone: "+1 234 567 895",
-  },
-  {
-    id: 7,
-    name: "Frank Miller",
-    email: "frank@example.com",
-    address: "404 Birch St, County, Country",
-    phone: "+1 234 567 896",
-  },
-  {
-    id: 8,
-    name: "Grace Taylor",
-    email: "grace@example.com",
-    address: "505 Walnut St, State, Country",
-    phone: "+1 234 567 897",
-  },
-  {
-    id: 9,
-    name: "Henry Anderson",
-    email: "henry@example.com",
-    address: "606 Cherry St, Province, Country",
-    phone: "+1 234 567 898",
-  },
-  {
-    id: 10,
-    name: "Ivy Thomas",
-    email: "ivy@example.com",
-    address: "707 Pineapple St, Territory, Country",
-    phone: "+1 234 567 899",
-  },
-  {
-    id: 11,
-    name: "Jack Robinson",
-    email: "jack@example.com",
-    address: "808 Apple St, Region, Country",
-    phone: "+1 234 567 900",
-  },
-  {
-    id: 12,
-    name: "Kelly White",
-    email: "kelly@example.com",
-    address: "909 Grape St, Area, Country",
-    phone: "+1 234 567 901",
-  },
-  {
-    id: 13,
-    name: "Liam Harris",
-    email: "liam@example.com",
-    address: "111 Peach St, Zone, Country",
-    phone: "+1 234 567 902",
-  },
-  {
-    id: 14,
-    name: "Mia Clark",
-    email: "mia@example.com",
-    address: "222 Plum St, Sector, Country",
-    phone: "+1 234 567 903",
-  },
-  {
-    id: 15,
-    name: "Noah Lewis",
-    email: "noah@example.com",
-    address: "333 Orange St, District, Country",
-    phone: "+1 234 567 904",
-  },
-];
+// Mock user data
 
 export default function UsersPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<TUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const usersPerPage = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState<string>("name");
+  const [sortDirection, setSortDirection] = useState<string>("asc");
 
   // Filter users based on search term
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Sort users
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (a[sortColumn] < b[sortColumn]) return sortDirection === "asc" ? -1 : 1;
+    if (a[sortColumn] > b[sortColumn]) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
 
   // Get current users
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Handle sort
+  const handleSort = (column: string) => {
+    if (column === sortColumn) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Action handlers
+  const copyEmail = (email: string) => {
+    navigator.clipboard.writeText(email);
+    toast.success("Email copied to clipboard");
+  };
+
+  const editUser = (id: number) => {
+    toast.info(`Edit user with ID: ${id}`);
+  };
+
+  const viewUser = (id: number) => {
+    toast.info(`View user with ID: ${id}`);
+  };
+
+  const deleteUser = (id: number) => {
+    toast.error(`Delete user with ID: ${id}`);
+  };
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const data = await getUsers();
+        setUsers(data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchUsers();
+  }, []);
+
   return (
-    <div className="container mx-auto py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>User List</CardTitle>
-          <CardDescription>Manage and view user details</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Input
-              type="text"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="max-w-sm"
-            />
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>Phone</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.address}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex items-center justify-between space-x-2 py-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-              Previous
-            </Button>
-            <div className="flex-1 text-center text-sm text-muted-foreground">
-              Page {currentPage} of{" "}
-              {Math.ceil(filteredUsers.length / usersPerPage)}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => paginate(currentPage + 1)}
-              disabled={indexOfLastUser >= filteredUsers.length}
-            >
-              Next
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-4xl font-bold mb-8">User Management</h1>
+
+      <div className="mb-6 flex justify-between items-center">
+        <div className="relative w-64">
+          <Input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        </div>
+        <Select defaultValue="10">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Users per page" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10 per page</SelectItem>
+            <SelectItem value="20">20 per page</SelectItem>
+            <SelectItem value="50">50 per page</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]" onClick={() => handleSort("id")}>
+              ID
+            </TableHead>
+            <TableHead onClick={() => handleSort("name")}>Name</TableHead>
+            <TableHead onClick={() => handleSort("email")}>Email</TableHead>
+            <TableHead onClick={() => handleSort("role")}>Role</TableHead>
+            <TableHead onClick={() => handleSort("status")}>Status</TableHead>
+            <TableHead onClick={() => handleSort("lastLogin")}>
+              Last Login
+            </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {currentUsers.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.role}</TableCell>
+              <TableCell>
+                <Badge
+                  variant={user.status === "Active" ? "default" : "secondary"}
+                >
+                  {user.status}
+                </Badge>
+              </TableCell>
+              <TableCell>{user.lastLogin}</TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => copyEmail(user.email)}
+                >
+                  <CopyIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => editUser(user.id)}
+                >
+                  <EditIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => viewUser(user.id)}
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => deleteUser(user.id)}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <div className="mt-4 flex items-center justify-between">
+        <div>
+          Showing {indexOfFirstUser + 1} to{" "}
+          {Math.min(indexOfLastUser, sortedUsers.length)} of{" "}
+          {sortedUsers.length} users
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => paginate(currentPage + 1)}
+            disabled={indexOfLastUser >= sortedUsers.length}
+          >
+            Next
+            <ChevronRightIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }
