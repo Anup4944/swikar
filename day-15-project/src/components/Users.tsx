@@ -28,7 +28,8 @@ import {
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import getUsers, { TUser } from "@/apiCalls/getUsers";
+import { getUsers, deleteUserById, TUser } from "@/apiCalls/userApi";
+import { formateDate } from "@/utils/formateDate";
 
 // Mock user data
 
@@ -87,25 +88,31 @@ export default function UsersPage() {
     toast.info(`View user with ID: ${id}`);
   };
 
-  const deleteUser = (id: number) => {
-    toast.error(`Delete user with ID: ${id}`);
-  };
+  async function fetchUsers() {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const data = await getUsers();
-        setUsers(data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
     fetchUsers();
   }, []);
 
+  function deleteUser(id: number, name: string) {
+    deleteUserById(id);
+    setUsers((currentUsers) => currentUsers.filter((user) => user.id !== id));
+    toast.success(`${name} with ID:${id} has been deleted`);
+  }
+
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8">User Management</h1>
+      <div className="flex justify-between">
+        <h1 className="text-4xl font-bold mb-8">User Management</h1>
+        <Button>Add Users</Button>
+      </div>
 
       <div className="mb-6 flex justify-between items-center">
         <div className="relative w-64">
@@ -160,7 +167,7 @@ export default function UsersPage() {
                   {user.status}
                 </Badge>
               </TableCell>
-              <TableCell>{user.lastLogin}</TableCell>
+              <TableCell>{formateDate(user.lastLogin)}</TableCell>
               <TableCell className="text-right">
                 <Button
                   variant="ghost"
@@ -186,7 +193,7 @@ export default function UsersPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => deleteUser(user.id)}
+                  onClick={() => deleteUser(user.id, user.name)}
                 >
                   <TrashIcon className="h-4 w-4" />
                 </Button>
