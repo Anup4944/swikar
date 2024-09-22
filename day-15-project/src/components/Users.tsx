@@ -46,9 +46,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useForm } from "react-hook-form";
-import { formSchema, FormUser } from "@/utils/validationSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { FormUser } from "@/utils/validationSchema";
+
 import {
   Form,
   FormControl,
@@ -59,6 +58,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Loader from "./Loader/Loader";
+import UserForm from "./UserForm";
 // Mock user data
 
 export default function UsersPage() {
@@ -70,16 +70,6 @@ export default function UsersPage() {
   const [sortDirection, setSortDirection] = useState<string>("asc");
   const [openSheet, setOpenSheet] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
-
-  const form = useForm<FormUser>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      role: "",
-      status: "",
-    },
-  });
 
   // react hook form for handleOnSubmit
   async function onSubmit(values: FormUser) {
@@ -189,80 +179,13 @@ export default function UsersPage() {
               </SheetDescription>
             </SheetHeader>
             <div className="grid gap-4 py-4">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-8"
-                >
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Fullname" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          This is your public display name.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Email" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          This is your public display email.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Role</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Role" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          This is your public display role.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <FormControl>
-                          <Input placeholder="status" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          This is your public display name.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <SheetFooter>
-                    {loading ? <Loader /> : <Button type="submit">Add</Button>}
-                  </SheetFooter>{" "}
-                </form>
-              </Form>
+              <UserForm
+                setLoading={setLoading}
+                setOpenSheet={setOpenSheet}
+                fetchUsers={fetchUsers}
+                toast={toast}
+                loading={loading}
+              />
             </div>
           </SheetContent>
         </Sheet>
@@ -323,27 +246,121 @@ export default function UsersPage() {
               </TableCell>
               <TableCell>{formateDate(user.lastLogin)}</TableCell>
               <TableCell className="text-right">
-                <Button
+                {/* <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => copyEmail(user.email)}
                 >
                   <CopyIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => editUser(user.id)}
-                >
-                  <EditIcon className="h-4 w-4" />
-                </Button>
-                <Button
+                </Button> */}
+
+                {/* <Sheet open={openSheet} onOpenChange={setOpenSheet}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => editUser(user.id)}
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Add new profiles</SheetTitle>
+                      <SheetDescription>
+                        Make changes to your profile here. Click save when
+                        you're done.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                      <Form {...form}>
+                        <form
+                          onSubmit={form.handleSubmit(onSubmit)}
+                          className="space-y-8"
+                        >
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Fullname" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is your public display name.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Email" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is your public display email.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="role"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Role</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Role" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is your public display role.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="status" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  This is your public display name.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <SheetFooter>
+                            {loading ? (
+                              <Loader />
+                            ) : (
+                              <Button type="submit">Add</Button>
+                            )}
+                          </SheetFooter>{" "}
+                        </form>
+                      </Form>
+                    </div>
+                  </SheetContent>
+                </Sheet> */}
+                {/* <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => viewUser(user.id)}
                 >
                   <EyeIcon className="h-4 w-4" />
-                </Button>
+                </Button> */}
                 <Button
                   variant="ghost"
                   size="icon"
