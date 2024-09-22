@@ -28,9 +28,37 @@ import {
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getUsers, deleteUserById, TUser } from "@/apiCalls/userApi";
+import {
+  getUsers,
+  deleteUserById,
+  TUser,
+  TUpdatedUser,
+  addUser,
+} from "@/apiCalls/userApi";
 import { formateDate } from "@/utils/formateDate";
-
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useForm } from "react-hook-form";
+import { formSchema, FormUser } from "@/utils/validationSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import Loader from "./Loader/Loader";
 // Mock user data
 
 export default function UsersPage() {
@@ -40,6 +68,33 @@ export default function UsersPage() {
   const [usersPerPage] = useState(10);
   const [sortColumn, setSortColumn] = useState<string>("name");
   const [sortDirection, setSortDirection] = useState<string>("asc");
+  const [openSheet, setOpenSheet] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<FormUser>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      role: "",
+      status: "",
+    },
+  });
+
+  // react hook form for handleOnSubmit
+  async function onSubmit(values: FormUser) {
+    try {
+      setLoading(true);
+      await addUser(values);
+      form.reset();
+      setLoading(false);
+      setOpenSheet(false);
+      await fetchUsers();
+      toast.success(`${values.name} has been created`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   // Filter users based on search term
   const filteredUsers = users.filter(
@@ -88,6 +143,17 @@ export default function UsersPage() {
     toast.info(`View user with ID: ${id}`);
   };
 
+  // handle on change for add user
+  // function handleFormChange(e) {
+  //   const fieldName = e.target.id;
+  //   const fieldValue = e.target.value;
+
+  //   setUpdatedUser({
+  //     ...updatedUser,
+  //     [fieldName]: fieldValue,
+  //   });
+  // }
+
   async function fetchUsers() {
     try {
       const data = await getUsers();
@@ -101,9 +167,9 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  function deleteUser(id: number, name: string) {
-    deleteUserById(id);
-    setUsers((currentUsers) => currentUsers.filter((user) => user.id !== id));
+  async function deleteUser(id: number, name: string) {
+    await deleteUserById(id);
+    await fetchUsers();
     toast.success(`${name} with ID:${id} has been deleted`);
   }
 
@@ -111,7 +177,95 @@ export default function UsersPage() {
     <div className="p-8 bg-gray-100 min-h-screen">
       <div className="flex justify-between">
         <h1 className="text-4xl font-bold mb-8">User Management</h1>
-        <Button>Add Users</Button>
+        <Sheet open={openSheet} onOpenChange={setOpenSheet}>
+          <SheetTrigger asChild>
+            <Button>Add Users</Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Add new profiles</SheetTitle>
+              <SheetDescription>
+                Make changes to your profile here. Click save when you're done.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-4 py-4">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-8"
+                >
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Fullname" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          This is your public display name.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          This is your public display email.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Role</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Role" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          This is your public display role.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <FormControl>
+                          <Input placeholder="status" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          This is your public display name.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <SheetFooter>
+                    {loading ? <Loader /> : <Button type="submit">Add</Button>}
+                  </SheetFooter>{" "}
+                </form>
+              </Form>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="mb-6 flex justify-between items-center">
