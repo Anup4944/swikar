@@ -8,13 +8,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "./ui/input";
-import { addUser } from "@/apiCalls/userApi";
+import { addUser, getUserById, TUser, updatedUser } from "@/apiCalls/userApi";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { formSchema, FormUser } from "@/utils/validationSchema";
 import { SheetFooter } from "./ui/sheet";
 import Loader from "./Loader/Loader";
 import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
 
 export default function UserForm({
   setLoading,
@@ -22,7 +23,17 @@ export default function UserForm({
   fetchUsers,
   toast,
   loading,
+  userId,
+}: {
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenSheet: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchUsers: Promise<void>;
+  toast: ToastOptions<TData>;
+  loading: boolean;
+  userId: number;
 }) {
+  const [userDt, setUserDt] = useState<TUser | null>(null);
+
   const form = useForm<FormUser>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -31,17 +42,45 @@ export default function UserForm({
       role: "",
       status: "",
     },
+    values: {
+      name: userDt?.name,
+      email: userDt?.email,
+      role: userDt?.role,
+      status: userDt?.status,
+    },
   });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (userId) {
+        try {
+          const data = await getUserById(userId);
+          setUserDt(data);
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
   // react hook form for handleOnSubmit
   async function onSubmit(values: FormUser) {
     try {
       setLoading(true);
-      await addUser(values);
-      form.reset();
+      if (userId) {
+        await updatedUser(values, userId);
+        setUserDt(values);
+        toast.success(`${values.name} has been edited`);
+      } else {
+        await addUser(values);
+        form.reset();
+        setOpenSheet(false);
+        toast.success(`${values.name} has been created`);
+      }
       setLoading(false);
-      setOpenSheet(false);
       await fetchUsers();
-      toast.success(`${values.name} has been created`);
     } catch (error) {
       console.log(error);
     }
@@ -114,7 +153,13 @@ export default function UserForm({
           )}
         />
         <SheetFooter>
-          {loading ? <Loader /> : <Button type="submit">Add</Button>}
+          {loading ? (
+            <Loader />
+          ) : userId ? (
+            <Button type="submit">Save</Button>
+          ) : (
+            <Button type="submit">Add</Button>
+          )}
         </SheetFooter>{" "}
       </form>
     </Form>

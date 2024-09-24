@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 export type TUser = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -28,12 +28,11 @@ async function getUsers() {
     throw error;
   }
 }
-async function getUserById(id: number) {
+async function getUserById(id: string) {
   try {
-    const response: AxiosResponse<TUser[]> = await axios.get(
+    const response: AxiosResponse<TUser> = await axios.get(
       `https://66e40badd2405277ed12d3f2.mockapi.io/users/${id}`
     );
-
     return response.data;
   } catch (error) {
     console.log(error);
@@ -41,7 +40,7 @@ async function getUserById(id: number) {
   }
 }
 
-async function deleteUserById(id: number) {
+async function deleteUserById(id: string) {
   try {
     const response: AxiosResponse<TUser[]> = await axios.delete(
       `https://66e40badd2405277ed12d3f2.mockapi.io/users/${id}`

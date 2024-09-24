@@ -46,18 +46,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { FormUser } from "@/utils/validationSchema";
-
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import Loader from "./Loader/Loader";
 import UserForm from "./UserForm";
 // Mock user data
 
@@ -70,21 +58,6 @@ export default function UsersPage() {
   const [sortDirection, setSortDirection] = useState<string>("asc");
   const [openSheet, setOpenSheet] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
-
-  // react hook form for handleOnSubmit
-  async function onSubmit(values: FormUser) {
-    try {
-      setLoading(true);
-      await addUser(values);
-      form.reset();
-      setLoading(false);
-      setOpenSheet(false);
-      await fetchUsers();
-      toast.success(`${values.name} has been created`);
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   // Filter users based on search term
   const filteredUsers = users.filter(
@@ -123,10 +96,6 @@ export default function UsersPage() {
   const copyEmail = (email: string) => {
     navigator.clipboard.writeText(email);
     toast.success("Email copied to clipboard");
-  };
-
-  const editUser = (id: number) => {
-    toast.info(`Edit user with ID: ${id}`);
   };
 
   const viewUser = (id: number) => {
@@ -246,121 +215,51 @@ export default function UsersPage() {
               </TableCell>
               <TableCell>{formateDate(user.lastLogin)}</TableCell>
               <TableCell className="text-right">
-                {/* <Button
+                <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => copyEmail(user.email)}
                 >
                   <CopyIcon className="h-4 w-4" />
-                </Button> */}
+                </Button>
 
-                {/* <Sheet open={openSheet} onOpenChange={setOpenSheet}>
+                <Sheet>
                   <SheetTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => editUser(user.id)}
+                      // onClick={() => editUser(user.id)}
                     >
                       <EditIcon className="h-4 w-4" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle>Add new profiles</SheetTitle>
+                      <SheetTitle>Edit user</SheetTitle>
                       <SheetDescription>
                         Make changes to your profile here. Click save when
                         you're done.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="grid gap-4 py-4">
-                      <Form {...form}>
-                        <form
-                          onSubmit={form.handleSubmit(onSubmit)}
-                          className="space-y-8"
-                        >
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Fullname" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  This is your public display name.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Email" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  This is your public display email.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="role"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Role</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Role" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  This is your public display role.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="status"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Status</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="status" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  This is your public display name.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <SheetFooter>
-                            {loading ? (
-                              <Loader />
-                            ) : (
-                              <Button type="submit">Add</Button>
-                            )}
-                          </SheetFooter>{" "}
-                        </form>
-                      </Form>
+                      <UserForm
+                        setLoading={setLoading}
+                        fetchUsers={fetchUsers}
+                        toast={toast}
+                        loading={loading}
+                        userId={user?.id}
+                      />
                     </div>
                   </SheetContent>
-                </Sheet> */}
-                {/* <Button
+                </Sheet>
+
+                <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => viewUser(user.id)}
                 >
                   <EyeIcon className="h-4 w-4" />
-                </Button> */}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
